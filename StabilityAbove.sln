@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StabilityAbove", "StabilityAbove\StabilityAbove.csproj", "{BDECB26E-C3AA-4068-89AF-D5C842D5CE76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CakeBuild", "ZZCakeBuild\CakeBuild.csproj", "{8C9BBCCC-5CD5-45C3-8F51-D3157A2CC232}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BDECB26E-C3AA-4068-89AF-D5C842D5CE76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDECB26E-C3AA-4068-89AF-D5C842D5CE76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDECB26E-C3AA-4068-89AF-D5C842D5CE76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDECB26E-C3AA-4068-89AF-D5C842D5CE76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C9BBCCC-5CD5-45C3-8F51-D3157A2CC232}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C9BBCCC-5CD5-45C3-8F51-D3157A2CC232}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C9BBCCC-5CD5-45C3-8F51-D3157A2CC232}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C9BBCCC-5CD5-45C3-8F51-D3157A2CC232}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
