@@ -2,7 +2,9 @@
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using JetBrains.Annotations;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 using Vintagestory.ServerMods;
 
@@ -10,6 +12,7 @@ namespace StabilityAbove;
 
 [UsedImplicitly]
 public class StabilityAbove : ModSystem {
+    private ModConfig? Config;
     private GetTemporalStabilityDelegate? StoryStructureStabilityOverwrite;
     
     public override double ExecuteOrder() => 0.2F; // Has to load after StoryStructuresSpawnConditions to override their stability delegate!
@@ -18,7 +21,7 @@ public class StabilityAbove : ModSystem {
         CaptureStoryStructureDelegate(Api);
         Api.ModLoader.GetModSystem<SystemTemporalStability>().OnGetTemporalStability += ClampStabilityOverground;
     }
-
+    
     private void CaptureStoryStructureDelegate(ICoreAPI Api) {
         var StoryStructureSpawn = Api.ModLoader.GetModSystem<StoryStructuresSpawnConditions>();
         var StabilityDelegate = StoryStructureSpawn.GetType().GetMethod("ResoArchivesSpawnConditions_OnGetTemporalStability", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -30,12 +33,14 @@ public class StabilityAbove : ModSystem {
     }
     
     private float ClampStabilityOverground(float Stability, double X, double Y, double Z) {
+        Contract.Assert(Config != null);
         Contract.Assert(StoryStructureStabilityOverwrite != null);
 
         var OverwriteStability = Stability;
-        var OverwriteStartHeight = TerraGenConfig.seaLevel - 10;
+        var TransitionHeight = (int) (TerraGenConfig.seaLevel * Config.TransitionHeightPercentage);
+        var OverwriteStartHeight = (TerraGenConfig.seaLevel * Config.StabilityHeightPercentage) - TransitionHeight;
         if (Stability < 1.0 && Y >= OverwriteStartHeight) {
-            var InterpolationFactor = (float) Math.Min((Y - OverwriteStartHeight) / 10, 1.0F);
+            var InterpolationFactor = (float) Math.Min((Y - OverwriteStartHeight) / TransitionHeight, 1.0F);
             OverwriteStability = Stability * (1 - InterpolationFactor) + 1.0F * InterpolationFactor;
         }
         
@@ -43,5 +48,34 @@ public class StabilityAbove : ModSystem {
         var StoryStructureStability = StoryStructureStabilityOverwrite(Stability, X, Y, Z);
         
         return Math.Max(OverwriteStability, StoryStructureStability);
+    }
+    
+    public override void StartServerSide(ICoreServerAPI Api) {
+        TryLoadConfig(Api);
+        
+        Api.World.Config.SetFloat("StabilityAbove.StabilityHeightPercentage", Config!.StabilityHeightPercentage);
+        Api.World.Config.SetFloat("StabilityAbove.TransitionHeightPercentage", Config!.TransitionHeightPercentage);
+    }
+
+    private void TryLoadConfig(ICoreAPI Api) {
+        try {
+            Config = Api.LoadModConfig<ModConfig>("StabilityAbove.json") ?? new ModConfig();
+            Api.StoreModConfig(Config, "StabilityAbove.json");
+        } catch (Exception Exception) {
+            Mod.Logger.Error("Could not load config! Loading default settings instead.");
+            Mod.Logger.Error(Exception);
+            
+            Config = new ModConfig();
+        }
+    }
+
+    public override void StartClientSide(ICoreClientAPI Api) {
+        TryLoadConfig(Api);
+        
+        if (Api.World.Config.HasAttribute("StabilityAbove.StabilityHeightPercentage"))
+            Config!.StabilityHeightPercentage = Api.World.Config.GetFloat("StabilityAbove.StabilityHeightPercentage");
+        
+        if (Api.World.Config.HasAttribute("StabilityAbove.TransitionHeightPercentage"))
+            Config!.TransitionHeightPercentage = Api.World.Config.GetFloat("StabilityAbove.TransitionHeightPercentage");
     }
 }
