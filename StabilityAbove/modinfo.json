@@ -2,13 +2,13 @@
     "$schema": "https://moddbcdn.vintagestory.at/schema/modinfo.latest.json",
     "type": "Code",
     "modid": "stabilityabove",
-    "name": "StabilityAbove",
+    "name": "Stability Above",
     "authors": [
-        "Unknown"
+        "AlexBrumbart"
     ],
-    "description": "To be added",
+    "description": "Removes unstable areas above the sea height.",
     "version": "1.0.0",
     "dependencies": {
-        "game": "1.21.0"
+        "game": "1.22.0-rc.2"
     }
 }
