@@ -1,5 +1,7 @@
-.idea
+.idea/
+Releases/
 bin/
 obj/
 
 *.user
+*.DotSettings

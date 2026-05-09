@@ -9,6 +9,6 @@
     "description": "Removes unstable areas above the sea height.",
     "version": "1.0.0",
     "dependencies": {
-        "game": "1.22.0-rc.2"
+        "game": "1.22.2"
     }
 }
