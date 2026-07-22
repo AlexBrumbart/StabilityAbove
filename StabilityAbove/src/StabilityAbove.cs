@@ -12,6 +12,8 @@ namespace StabilityAbove;
 
 [UsedImplicitly]
 public class StabilityAbove : ModSystem {
+    public bool Enabled { get; set; } = true;
+
     private ModConfig? Config;
     private GetTemporalStabilityDelegate? StoryStructureStabilityOverwrite;
     
@@ -33,6 +35,9 @@ public class StabilityAbove : ModSystem {
     }
     
     private float ClampStabilityOverground(float Stability, double X, double Y, double Z) {
+        if (!Enabled)
+            return Stability;
+        
         Contract.Assert(Config != null);
         Contract.Assert(StoryStructureStabilityOverwrite != null);
 
@@ -55,6 +60,8 @@ public class StabilityAbove : ModSystem {
         
         Api.World.Config.SetFloat("StabilityAbove.StabilityHeightPercentage", Config!.StabilityHeightPercentage);
         Api.World.Config.SetFloat("StabilityAbove.TransitionHeightPercentage", Config!.TransitionHeightPercentage);
+
+        ModCommand.CreateDebugCommand(Api, this);
     }
 
     private void TryLoadConfig(ICoreAPI Api) {
