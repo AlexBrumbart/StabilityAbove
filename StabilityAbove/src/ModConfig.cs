@@ -6,4 +6,7 @@ public class ModConfig {
 
     // The percentage of the sea-level height used as a transition zone below the stable zone.
     public float TransitionHeightPercentage { get; set; } = 0.10F;
+    
+    // States if the mod should be disabled during a temporal storm.
+    public bool DisableDuringTemporalStorm { get; set; } = true;
 }

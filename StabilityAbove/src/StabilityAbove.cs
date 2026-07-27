@@ -15,12 +15,15 @@ public class StabilityAbove : ModSystem {
     public bool Enabled { get; set; } = true;
 
     private ModConfig? Config;
+    private SystemTemporalStability TemporalStabilitySystem;
     private GetTemporalStabilityDelegate? StoryStructureStabilityOverwrite;
     
     public override double ExecuteOrder() => 0.2F; // Has to load after StoryStructuresSpawnConditions to override their stability delegate!
 
     public override void Start(ICoreAPI Api) {
+        TemporalStabilitySystem = Api.ModLoader.GetModSystem<SystemTemporalStability>();
         CaptureStoryStructureDelegate(Api);
+        
         Api.ModLoader.GetModSystem<SystemTemporalStability>().OnGetTemporalStability += ClampStabilityOverground;
     }
     
@@ -35,11 +38,14 @@ public class StabilityAbove : ModSystem {
     }
     
     private float ClampStabilityOverground(float Stability, double X, double Y, double Z) {
+        Contract.Assert(Config != null);
+        Contract.Assert(StoryStructureStabilityOverwrite != null);
+        
         if (!Enabled)
             return Stability;
         
-        Contract.Assert(Config != null);
-        Contract.Assert(StoryStructureStabilityOverwrite != null);
+        if (Config.DisableDuringTemporalStorm && TemporalStabilitySystem.StormData.nowStormActive)
+            return Stability;
 
         var OverwriteStability = Stability;
         var TransitionHeight = (int) (TerraGenConfig.seaLevel * Config.TransitionHeightPercentage);
@@ -60,6 +66,7 @@ public class StabilityAbove : ModSystem {
         
         Api.World.Config.SetFloat("StabilityAbove.StabilityHeightPercentage", Config!.StabilityHeightPercentage);
         Api.World.Config.SetFloat("StabilityAbove.TransitionHeightPercentage", Config!.TransitionHeightPercentage);
+        Api.World.Config.SetBool("StabilityAbove.DisableDuringTemporalStorm", Config!.DisableDuringTemporalStorm);
 
         ModCommand.CreateDebugCommand(Api, this);
     }
@@ -84,5 +91,8 @@ public class StabilityAbove : ModSystem {
         
         if (Api.World.Config.HasAttribute("StabilityAbove.TransitionHeightPercentage"))
             Config!.TransitionHeightPercentage = Api.World.Config.GetFloat("StabilityAbove.TransitionHeightPercentage");
+        
+        if (Api.World.Config.HasAttribute("StabilityAbove.DisableDuringTemporalStorm"))
+            Config!.DisableDuringTemporalStorm = Api.World.Config.GetBool("StabilityAbove.DisableDuringTemporalStorm");
     }
 }
