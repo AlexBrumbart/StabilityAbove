@@ -6,6 +6,9 @@ using Vintagestory.API.Server;
 namespace StabilityAbove;
 
 public class ModConfig {
+    // The stability value to which the world gets stabilized.
+    public float StableStability { get; private set; } = 1.0F;
+    
     // The percentage of the sea-level height, above which the world is stable.
     public float StabilityHeightPercentage { get; private set; } = 1.0F;
 
@@ -21,6 +24,7 @@ public class ModConfig {
      * Sets the mod config options as world config values, which can be used for synchronization to the client.
      */
     public void SetWorldConfig(ICoreServerAPI Api) {
+        Api.World.Config.SetFloat("StabilityAbove.StableStability", StableStability);
         Api.World.Config.SetFloat("StabilityAbove.StabilityHeightPercentage", StabilityHeightPercentage);
         Api.World.Config.SetFloat("StabilityAbove.TransitionHeightPercentage", TransitionHeightPercentage);
         Api.World.Config.SetBool("StabilityAbove.DisableDuringTemporalStorm", DisableDuringTemporalStorm);
@@ -30,6 +34,9 @@ public class ModConfig {
      * Loads the mod config options from the world config, which can be used for synchronization from the server.
      */
     public void LoadWorldConfig(ICoreClientAPI Api) {
+        if (Api.World.Config.HasAttribute("StabilityAbove.StableStability"))
+            StableStability = Api.World.Config.GetFloat("StabilityAbove.StableStability");
+        
         if (Api.World.Config.HasAttribute("StabilityAbove.StabilityHeightPercentage"))
             StabilityHeightPercentage = Api.World.Config.GetFloat("StabilityAbove.StabilityHeightPercentage");
         

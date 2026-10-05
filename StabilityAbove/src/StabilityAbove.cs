@@ -68,9 +68,9 @@ public class StabilityAbove : ModSystem {
         var OverwriteStability = Stability;
         var TransitionHeight = (int) (TerraGenConfig.seaLevel * Config.TransitionHeightPercentage);
         var OverwriteStartHeight = (TerraGenConfig.seaLevel * Config.StabilityHeightPercentage) - TransitionHeight;
-        if (Stability < 1.0 && Y >= OverwriteStartHeight) {
+        if (Stability < Config.StableStability && Y >= OverwriteStartHeight) {
             var InterpolationFactor = (float) Math.Min((Y - OverwriteStartHeight) / TransitionHeight, 1.0F);
-            OverwriteStability = Stability * (1 - InterpolationFactor) + 1.0F * InterpolationFactor;
+            OverwriteStability = Stability * (1.0F - InterpolationFactor) + Config.StableStability * InterpolationFactor;
         }
         
         // This delegate overrides the delegate of StoryStructuresSpawnConditions, which needs to be included here.
