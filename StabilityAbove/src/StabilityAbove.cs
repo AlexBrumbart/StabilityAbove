@@ -54,28 +54,41 @@ public class StabilityAbove : ModSystem {
         StoryStructureStabilityOverwrite = (GetTemporalStabilityDelegate) Delegate.CreateDelegate(typeof(GetTemporalStabilityDelegate), StoryStructureSpawn, StabilityDelegate);
     }
     
+    /*
+     * Delegate called from the game to allow adjusting the temporal stability.
+     *
+     * As only one delegate can be set, the StoryStructuresSpawnConditions overwrite, which should be included manually!
+     */
     private float ClampStabilityOverground(float Stability, double X, double Y, double Z) {
-        Contract.Assert(Config != null);
-        Contract.Assert(TemporalStabilitySystem != null);
         Contract.Assert(StoryStructureStabilityOverwrite != null);
         
-        if (!Enabled)
-            return Stability;
-        
-        if (Config.DisableDuringTemporalStorm && TemporalStabilitySystem.StormData.nowStormActive)
+        if (!Enabled || DisableForStorm())
             return Stability;
 
-        var OverwriteStability = Stability;
-        var TransitionHeight = (int) (TerraGenConfig.seaLevel * Config.TransitionHeightPercentage);
-        var OverwriteStartHeight = (TerraGenConfig.seaLevel * Config.StabilityHeightPercentage) - TransitionHeight;
-        if (Stability < Config.StableStability && Y >= OverwriteStartHeight) {
-            var InterpolationFactor = (float) Math.Min((Y - OverwriteStartHeight) / TransitionHeight, 1.0F);
-            OverwriteStability = Stability * (1.0F - InterpolationFactor) + Config.StableStability * InterpolationFactor;
-        }
-        
-        // This delegate overrides the delegate of StoryStructuresSpawnConditions, which needs to be included here.
+        var OverwriteStability = CalculateStability(Stability, Y);
         var StoryStructureStability = StoryStructureStabilityOverwrite(Stability, X, Y, Z);
         
         return Math.Max(OverwriteStability, StoryStructureStability);
+    }
+    
+    private bool DisableForStorm() {
+        Contract.Assert(Config != null);
+        Contract.Assert(TemporalStabilitySystem != null);
+        
+        return Config.DisableDuringTemporalStorm && TemporalStabilitySystem.StormData.nowStormActive;
+    }
+
+    private float CalculateStability(float Stability, double Height) {
+        Contract.Assert(Config != null);
+        
+        var OverwriteStability = Stability;
+        var TransitionHeight = (int) (TerraGenConfig.seaLevel * Config.TransitionHeightPercentage);
+        var OverwriteStartHeight = (TerraGenConfig.seaLevel * Config.StabilityHeightPercentage) - TransitionHeight;
+        if (Stability < Config.StableStability && Height >= OverwriteStartHeight) {
+            var InterpolationFactor = (float) Math.Min((Height - OverwriteStartHeight) / TransitionHeight, 1.0F);
+            OverwriteStability = Stability * (1.0F - InterpolationFactor) + Config.StableStability * InterpolationFactor;
+        }
+
+        return OverwriteStability;
     }
 }
