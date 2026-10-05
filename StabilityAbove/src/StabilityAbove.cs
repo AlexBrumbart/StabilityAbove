@@ -15,10 +15,13 @@ public class StabilityAbove : ModSystem {
     public bool Enabled { get; set; } = true;
 
     private ModConfig? Config;
-    private SystemTemporalStability TemporalStabilitySystem;
+    
+    private SystemTemporalStability? TemporalStabilitySystem;
     private GetTemporalStabilityDelegate? StoryStructureStabilityOverwrite;
     
     public override double ExecuteOrder() => 0.2F; // Has to load after StoryStructuresSpawnConditions to override their stability delegate!
+    
+    /* ----- Lifecycle methods ----- */
 
     public override void Start(ICoreAPI Api) {
         TemporalStabilitySystem = Api.ModLoader.GetModSystem<SystemTemporalStability>();
@@ -26,6 +29,20 @@ public class StabilityAbove : ModSystem {
         
         Api.ModLoader.GetModSystem<SystemTemporalStability>().OnGetTemporalStability += ClampStabilityOverground;
     }
+    
+    public override void StartServerSide(ICoreServerAPI Api) {
+        Config = ModConfig.TryLoad(Api, Mod.Logger);
+        Config.SetWorldConfig(Api);
+
+        ModCommand.CreateDebugCommand(Api, this);
+    }
+    
+    public override void StartClientSide(ICoreClientAPI Api) {
+        Config = ModConfig.TryLoad(Api, Mod.Logger);
+        Config.LoadWorldConfig(Api);
+    }
+    
+    /* ----- Class methods ----- */
     
     private void CaptureStoryStructureDelegate(ICoreAPI Api) {
         var StoryStructureSpawn = Api.ModLoader.GetModSystem<StoryStructuresSpawnConditions>();
@@ -39,6 +56,7 @@ public class StabilityAbove : ModSystem {
     
     private float ClampStabilityOverground(float Stability, double X, double Y, double Z) {
         Contract.Assert(Config != null);
+        Contract.Assert(TemporalStabilitySystem != null);
         Contract.Assert(StoryStructureStabilityOverwrite != null);
         
         if (!Enabled)
@@ -59,40 +77,5 @@ public class StabilityAbove : ModSystem {
         var StoryStructureStability = StoryStructureStabilityOverwrite(Stability, X, Y, Z);
         
         return Math.Max(OverwriteStability, StoryStructureStability);
-    }
-    
-    public override void StartServerSide(ICoreServerAPI Api) {
-        TryLoadConfig(Api);
-        
-        Api.World.Config.SetFloat("StabilityAbove.StabilityHeightPercentage", Config!.StabilityHeightPercentage);
-        Api.World.Config.SetFloat("StabilityAbove.TransitionHeightPercentage", Config!.TransitionHeightPercentage);
-        Api.World.Config.SetBool("StabilityAbove.DisableDuringTemporalStorm", Config!.DisableDuringTemporalStorm);
-
-        ModCommand.CreateDebugCommand(Api, this);
-    }
-
-    private void TryLoadConfig(ICoreAPI Api) {
-        try {
-            Config = Api.LoadModConfig<ModConfig>("StabilityAbove.json") ?? new ModConfig();
-            Api.StoreModConfig(Config, "StabilityAbove.json");
-        } catch (Exception Exception) {
-            Mod.Logger.Error("Could not load config! Loading default settings instead.");
-            Mod.Logger.Error(Exception);
-            
-            Config = new ModConfig();
-        }
-    }
-
-    public override void StartClientSide(ICoreClientAPI Api) {
-        TryLoadConfig(Api);
-        
-        if (Api.World.Config.HasAttribute("StabilityAbove.StabilityHeightPercentage"))
-            Config!.StabilityHeightPercentage = Api.World.Config.GetFloat("StabilityAbove.StabilityHeightPercentage");
-        
-        if (Api.World.Config.HasAttribute("StabilityAbove.TransitionHeightPercentage"))
-            Config!.TransitionHeightPercentage = Api.World.Config.GetFloat("StabilityAbove.TransitionHeightPercentage");
-        
-        if (Api.World.Config.HasAttribute("StabilityAbove.DisableDuringTemporalStorm"))
-            Config!.DisableDuringTemporalStorm = Api.World.Config.GetBool("StabilityAbove.DisableDuringTemporalStorm");
     }
 }
