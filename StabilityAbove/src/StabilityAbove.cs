@@ -14,7 +14,7 @@ namespace StabilityAbove;
 public class StabilityAbove : ModSystem {
     public bool Enabled { get; set; } = true;
 
-    private ModConfig? Config;
+    public ModConfig? Config { get; private set; }
     
     private SystemTemporalStability? TemporalStabilitySystem;
     private GetTemporalStabilityDelegate? StoryStructureStabilityOverwrite;
@@ -34,7 +34,7 @@ public class StabilityAbove : ModSystem {
         Config = ModConfig.TryLoad(Api, Mod.Logger);
         Config.SetWorldConfig(Api);
 
-        ModCommand.CreateDebugCommand(Api, this);
+        ModCommand.CreateDebugCommands(Api, this);
     }
     
     public override void StartClientSide(ICoreClientAPI Api) {
