@@ -1,34 +1,37 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
 namespace StabilityAbove;
 
+// public set is needed for config to load properly
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public class ModConfig {
     /**
      * The stability value to which the world gets stabilized.
      * Valid between 0.0 and 2.0.
      */
-    public float StableStability { get; private set; } = 1.0F;
+    public float StableStability { get; set; } = 1.0F;
     
     /**
      * The percentage of the sea-level height, above which the world is stable.
      * Valid between 0.0 and 2.5.
      */
-    public float StabilityHeightPercentage { get; private set; } = 1.0F;
+    public float StabilityHeightPercentage { get; set; } = 1.0F;
 
     /**
      * The percentage of the sea-level height used as a transition zone below the stable zone.
      * Valid between 0.0 and 1.0.
      */
-    public float TransitionHeightPercentage { get; private set; } = 0.10F;
+    public float TransitionHeightPercentage { get; set; } = 0.10F;
     
     /**
      * States if the mod should be disabled during a temporal storm.
      * Valid either "true" or "false".
      */
-    public bool DisableDuringTemporalStorm { get; private set; } = true;
+    public bool DisableDuringTemporalStorm { get; set; } = true;
     
     /* ----- Config functionality ----- */
     
